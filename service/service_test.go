@@ -1,4 +1,4 @@
-package pairladder_test
+package service_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"pairladder/inmemory"
 	"pairladder/models"
-	"pairladder/storages"
+	service2 "pairladder/service"
 	"testing"
 )
 
@@ -20,10 +20,10 @@ func TestService(tt *testing.T) {
 		}),
 	}
 
-	service := testcase.Var[*Service]{
+	service := testcase.Var[*service2.Service]{
 		ID: "idk",
-		Init: testcase.VarInitFunc[*Service](func(t *testcase.T) *Service {
-			return NewService(storage.Get(t))
+		Init: testcase.VarInitFunc[*service2.Service](func(t *testcase.T) *service2.Service {
+			return service2.NewService(storage.Get(t))
 		}),
 		Before: nil,
 		OnLet:  nil,
@@ -55,25 +55,4 @@ func TestService(tt *testing.T) {
 		})
 	})
 
-}
-
-type Service struct {
-	storage storages.Storage
-}
-
-func NewService(storage storages.Storage) *Service {
-	return &Service{storage: storage}
-}
-
-func (s Service) RecordPair(ctx context.Context, personA models.Person, personB models.Person) error {
-	count, err := s.storage.GetPairCount(ctx, personA.ID, personB.ID)
-	if err != nil {
-		return err
-	}
-
-	return s.storage.SetPairCount(ctx, personA, personB, count+1)
-}
-
-func (s Service) GetPair(ctx context.Context, personA models.Person, personB models.Person) (int, error) {
-	return s.storage.GetPairCount(ctx, personA.ID, personB.ID)
 }
